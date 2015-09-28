@@ -1,0 +1,12 @@
+# C extensions
+*.so
+
+
+*.bak
+*~
+*.swp
+
+
+*.log
+
+config.ini
