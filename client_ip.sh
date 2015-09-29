@@ -35,6 +35,7 @@ do
     esac
 done
 
+LOGTYPE=$av_LOGTYPE
 
 if [ "${dbg}" == "1" ]; then
     echo "---- debug ---------"
@@ -68,10 +69,20 @@ elif [ -n "${av_FPAT}" ]; then
     parameters="-v av_FPAT=\""$av_FPAT"\""
 elif [ -n "${av_FIELD_INDEX}" ]; then
     parameters="-v av_FIELD_INDEX=\""$av_FIELD_INDEX"\""
-elif [ -n] ; then
-    pass
 fi
 
 echo $parameters
+
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
+if [ -f "${MYDIR}/configure.sh" ] ; then
+    source "${MYDIR}/configure.sh"
+else
+    echo "configure file not found: configure.sh"
+    die 501
+fi
+
 
 # awk -f analytics.awk $parameters $file
