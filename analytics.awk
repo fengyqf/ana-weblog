@@ -5,7 +5,7 @@
 #   av_LOGTYPE          日志类型，可选值 iis, apache
 #   av_FS               awk 的 FS 变量
 #   av_FPAT             awk 的 FPAT 变量，要求gawk 4.0+以上版本
-#   av_field_index      做统计数等时，依照的字段编号，即 awk 中$1,$2,$9等的下标
+#   av_FIELD_INDEX      做统计数等时，依照的字段编号，即 awk 中$1,$2,$9等的下标
 #   av_dbg              debug参数，定义几个级别？
 #
 #
@@ -24,9 +24,11 @@
 BEGIN {
     #debug
     if(av_dbg > 0){
-        dbg=av_dbg+0
+        av_dbg=av_dbg+0
+    }else if(av_DBG > 0){
+        av_dbg=av_DBG+0
     }else{
-        dbg=0
+        av_dbg=0
     }
 
     if(av_dbg){
