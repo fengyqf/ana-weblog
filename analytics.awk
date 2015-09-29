@@ -20,8 +20,7 @@
 #   $ head -20 access.log |awk -f analytics.awk -v av_FPAT='([^ ]+)|\\\"([^\\\"]+)\\\"'  
 
 
-#运行前
-BEGIN {
+function parse_arguments(){
     #debug
     if(av_dbg > 0){
         av_dbg=av_dbg+0
@@ -65,6 +64,10 @@ BEGIN {
     }
 }
 
+#运行前
+BEGIN {
+    parse_arguments()
+}
 
 #运行中
 {
