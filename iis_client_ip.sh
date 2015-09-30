@@ -157,8 +157,8 @@ awk -v total="${log_count}" -v threshold="${suspect_client_ip_percent_threshold}
         }
     }
     END{
-        print "----- suspect client ip END ----------";
-        print "suspect count: ",suspect_count,"";
+        print "----- suspect client ip END (count:",suspect_count,")----------";
+        #print "suspect count: ",suspect_count,"";
         # 将可疑ip地址写文件 tmp_suspect_ips.txt ,脚本结束后，注意清理这些临时文件
         print suspect_ips > "tmp_suspect_ips.txt"
     }'
@@ -222,20 +222,22 @@ awk -v ips="${ips}" -v fi_cip="$field_index_clientip" \
     }' $log_filepath > tmp_suspect_request.log
 
 
+
+echo -e "\n"
 #过滤出可疑请求的最多请求的useragent
-echo "---- most frequent user-agent ------------"
+echo "---- most frequent user-agent, and times ------------"
 awk -v fi_ua="${field_index_useragent}" \
     'BEGIN{FS=" "}
     {print $fi_ua}' \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
-echo -e "\n\n"
+echo -e "\n"
 
-echo "---- most frequent url ------------"
+echo "---- most frequent url, and times ------------"
 awk -v fi_url="${field_index_url}" \
     'BEGIN{FS=" "}
     {print $fi_url}' \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
-echo -e "\n\n"
+echo -e "\n"
 
 
 
