@@ -109,6 +109,9 @@ fi
 #定义web日志文件中字段位置
 field_index_clientip=10
 field_index_useragent=11
+# url, withOUT get-querystring
+field_index_url=6
+field_index_refer=12
 
 
 #两种计算行数的方式，
@@ -209,7 +212,7 @@ awk -v ips="${ips}" -v fi_cip="$field_index_clientip" \
         }
     }
 
-    in_array(ip_a,$fi_cip) == 1 {
+     $fi_cip!="" && $1!="#Fields:" && in_array(ip_a,$fi_cip) == 1 {
         #if(in_array(ip_a,$fi_cip)){
         #   print "Yes",$fi_cip;
         #}else{
@@ -219,6 +222,20 @@ awk -v ips="${ips}" -v fi_cip="$field_index_clientip" \
     }' $log_filepath > tmp_suspect_request.log
 
 
+#过滤出可疑请求的最多请求的useragent
+echo "---- most frequent user-agent ------------"
+awk -v fi_ua="${field_index_useragent}" \
+    'BEGIN{FS=" "}
+    {print $fi_ua}' \
+    tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
+echo -e "\n\n"
+
+echo "---- most frequent url ------------"
+awk -v fi_url="${field_index_url}" \
+    'BEGIN{FS=" "}
+    {print $fi_url}' \
+    tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
+echo -e "\n\n"
 
 
 
