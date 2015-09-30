@@ -79,8 +79,6 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 
 
-# awk -f analytics.awk $parameters $file
-
 
 # 总记录条数
 log_filepath=$@
@@ -213,11 +211,6 @@ awk -v ips="${ips}" -v fi_cip="$field_index_clientip" \
     }
 
      $fi_cip!="" && $1!="#Fields:" && in_array(ip_a,$fi_cip) == 1 {
-        #if(in_array(ip_a,$fi_cip)){
-        #   print "Yes",$fi_cip;
-        #}else{
-        #   print "NNNNNNNOO",$fi_cip
-        #}
         print $0
     }' $log_filepath > tmp_suspect_request.log
 
