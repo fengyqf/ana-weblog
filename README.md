@@ -7,7 +7,8 @@ gawk 4.0.0+
 
 
 # quick start
-awk -f analytics.awk your-weblog-file.log
+iis log, analytics suspect ip, and request url, useragent
+$ ./iis_client_ip.sh log_extend_iis_log.log
 
 # usage
 todo...
