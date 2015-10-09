@@ -238,7 +238,7 @@ awk -v fi_url="${field_index_url}" \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
-# 可ip疑请求的响应状态码
+# 可疑ip请求的响应状态码
 echo "---- [suspect ip] HTTP response status ------------"
 awk -v fi_status="${field_index_http_status}" \
     'BEGIN{FS=" "}
@@ -246,7 +246,7 @@ awk -v fi_status="${field_index_http_status}" \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
-# 可ip疑请求的最大请求字节数（按百字节计）
+# 可疑ip请求的最大请求字节数（按百字节计）
 echo "---- [suspect ip] request bytes (by 100 bytes) ------------"
 awk -v fi_r_bytes="${field_index_request_bytes}" \
     'BEGIN{FS=" "}
@@ -256,7 +256,7 @@ awk -v fi_r_bytes="${field_index_request_bytes}" \
     {printf "%5d\n",$1*100}' |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
-# 可ip疑请求的响应状态
+# 可疑ip请求的响应状态
 echo "---- [suspect ip] HTTP response bytes (by 1000 bytes) ------------"
 awk -v fi_r_bytes="${field_index_response_bytes}" \
     'BEGIN{FS=" "}
