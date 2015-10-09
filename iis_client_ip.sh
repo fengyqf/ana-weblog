@@ -79,8 +79,6 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 
 
-# awk -f analytics.awk $parameters $file
-
 
 # 总记录条数
 log_filepath=$@
