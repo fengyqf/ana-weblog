@@ -266,7 +266,7 @@ awk -v fi_r_bytes="${field_index_response_bytes}" \
     {printf "%10d\n",$1*1000}' |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
-# 可疑ip请求的目标文件类型（按文件名后缀判断），已知有缺陷！！
+# 可疑ip请求的目标文件类型（按文件名后缀判断）
 echo "---- [suspect ip] most popular file type ------------"
 awk -v fi_file="${field_index_url}" \
     'BEGIN{FS=" "}
@@ -274,11 +274,15 @@ awk -v fi_file="${field_index_url}" \
         pos=match($fi_file,/\.[a-zA-Z0-9]*(\/|$)/)
         print substr($fi_file,pos)
     }' \
-    tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
+    tmp_suspect_request.log |\
+    awk -F "/" '{print $1}' |\
+    sort |uniq -c |sort -nr |head -20
 echo -e "\n"
-# TODO 已知缺陷 !!!
-#   对于形式如 /index.php/list/123/ 的请求，将把无法剔除文件名后面附加部分
-
+# 处理缺陷
+#   对于形式如 /index.php/list/123/ 的请求，
+#     - 提到到的文件名后缀，只保留斜线（如果有）后面附加部分
+#     - 是否还有其它形式的缺陷，暂时未知
+#     - 如果能在 awk 内部提取到文件名，最好；但暂时没有方法
 
 
 # 清理临时文件
