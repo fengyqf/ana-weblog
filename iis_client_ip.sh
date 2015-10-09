@@ -266,6 +266,16 @@ awk -v fi_r_bytes="${field_index_response_bytes}" \
     {printf "%10d\n",$1*1000}' |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
+# 可疑ip请求的处理花费时间
+echo "---- [suspect ip] time taken to process request (by 10 seconds) ------------"
+awk -v fi_time="${field_index_time_taken}" \
+    'BEGIN{FS=" "}
+    {printf "%d\n",$fi_time/10}' \
+    tmp_suspect_request.log |\
+  awk 'BEGIN{FS=" "}
+    {printf "%8d\n",$1*10}' |sort |uniq -c |sort -nr |head -20
+echo -e "\n"
+
 # 可疑ip请求的目标文件类型（按文件名后缀判断）
 echo "---- [suspect ip] most popular file type ------------"
 awk -v fi_file="${field_index_url}" \
