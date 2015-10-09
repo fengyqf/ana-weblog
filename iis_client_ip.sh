@@ -218,14 +218,14 @@ awk -v ips="${ips}" -v fi_cip="$field_index_clientip" \
 
 echo -e "\n"
 #过滤出可疑请求的最多请求的useragent
-echo "---- most frequent user-agent, and times ------------"
+echo "---- [suspect ip] most frequent user-agent, and times ------------"
 awk -v fi_ua="${field_index_useragent}" \
     'BEGIN{FS=" "}
     {print $fi_ua}' \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
-echo "---- most frequent url, and times ------------"
+echo "---- [suspect ip] most frequent url, and times ------------"
 awk -v fi_url="${field_index_url}" \
     'BEGIN{FS=" "}
     {print $fi_url}' \
