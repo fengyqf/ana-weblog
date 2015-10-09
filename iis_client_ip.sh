@@ -110,6 +110,11 @@ field_index_useragent=11
 # url, withOUT get-querystring
 field_index_url=6
 field_index_refer=12
+field_index_http_status=14
+field_index_response_bytes=17
+field_index_request_bytes=18
+field_index_time_taken=19
+
 
 
 #两种计算行数的方式，
@@ -225,12 +230,43 @@ awk -v fi_ua="${field_index_useragent}" \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
+#过滤出可疑请求的最多请求的 url 及请求次数
 echo "---- [suspect ip] most frequent url, and times ------------"
 awk -v fi_url="${field_index_url}" \
     'BEGIN{FS=" "}
     {print $fi_url}' \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
+
+# 可ip疑请求的响应状态码
+echo "---- [suspect ip] HTTP response status ------------"
+awk -v fi_status="${field_index_http_status}" \
+    'BEGIN{FS=" "}
+    {print $fi_status}' \
+    tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
+echo -e "\n"
+
+# 可ip疑请求的最大请求字节数（按百字节计）
+echo "---- [suspect ip] request bytes (by 100 bytes) ------------"
+awk -v fi_r_bytes="${field_index_request_bytes}" \
+    'BEGIN{FS=" "}
+    {printf "%d\n",$fi_r_bytes/100}' \
+    tmp_suspect_request.log |\
+  awk 'BEGIN{FS=" "}
+    {printf "%5d\n",$1*100}' |sort |uniq -c |sort -nr |head -20
+echo -e "\n"
+
+# 可ip疑请求的响应状态
+echo "---- [suspect ip] HTTP response bytes (by 1000 bytes) ------------"
+awk -v fi_r_bytes="${field_index_response_bytes}" \
+    'BEGIN{FS=" "}
+    {printf "%d\n",$fi_r_bytes/1000}' \
+    tmp_suspect_request.log |\
+  awk 'BEGIN{FS=" "}
+    {printf "%10d\n",$1*1000}' |sort |uniq -c |sort -nr |head -20
+echo -e "\n"
+
+
 
 
 
