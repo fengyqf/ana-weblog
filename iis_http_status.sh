@@ -216,9 +216,6 @@ awk -F " " \
         for(i=1;i<=num;i++){
             count[idx[i]]=0
         }
-#        for(it in count){
-#            print "count: ",it,count[it]
-#        }
     }
     $fi_status!="" && $fi_status!="cs-host" {
         if($fi_status in count){
