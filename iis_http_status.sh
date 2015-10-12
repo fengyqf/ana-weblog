@@ -127,7 +127,6 @@ log_count=`awk 'END{print NR}' ${log_filepath}`
 
 echo "log file lines: "$log_count
 
-echo "---- HTTP request method, and count ------------"
 #awk -v fi_method="$field_index_method" \
 #    'BEGIN{FS=" "}
 #    $fi_method!="" {print $fi_method}' \
@@ -135,6 +134,7 @@ echo "---- HTTP request method, and count ------------"
 
 awk -v fi_method="$field_index_method" \
     'BEGIN{
+        print "\n---- HTTP request method, and count ------------"
         FS=" "
         #按 HTTP/1.1 的method定义awk数组 http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
         #输出时按下面定义的顺序
@@ -168,7 +168,6 @@ awk -v fi_method="$field_index_method" \
         total+=1
     }
     END{
-        print "--------------------------------"
         printf "%10s%10s\n","[method]","[count]"
         for(i in method){
             if(method[i] in count){
