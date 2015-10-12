@@ -192,6 +192,77 @@ awk -v fi_method="$field_index_method" \
     $log_filepath
     #|sort |uniq -c |sort -nr |head -20
 
+
+# [算法说明]
+# 下面awk脚本，在BEGIN{}段中，构造三个数组
+#   idx[1],idx[2],idx[3]...                         用于输出count[]数组时，按count[]元素下标在idx出现先后次序列出
+#   count[idx[1]],count[idx[2]],count[idx[3]]...    用于存储每个idx[]元素值，在记录中出现的行数
+#   xcount[1],xcount[2]...                          用于存储每个不在idx[]数组中的值，在记录中出现的行数
+#   事实上，下面awk脚本是对单列值做计数，类似于bash脚本
+#        ... |sort |uniq -c |sort
+#       但又不仅于此，增加如下特性：
+#          - 按idx[]值做分组，
+#                    在idx[]数组中的值，做为一组，计数为count[idx[i]]...
+#                    不在idx[]数组中的值，作为一组，计数为xcount[idx[i]]...
+#          - 对count[]计数的输出，按idx[]中定义的次序依次输出
+#        适全于：对非开放式字段的统计计数，把我们所关心的一些值计数，列到一组中，其它值计数，存储于xcount[]
+
+awk -F " " \
+   -v fi_status="$field_index_http_status" \
+    'BEGIN{
+        #idx_cs="200,206,301,302,304,400,403,404,405,406,500,501"
+        idx_cs="200,206,301,302,304,400,403,404"
+        num=split(idx_cs,idx,",")
+        for(i=1;i<=num;i++){
+            count[idx[i]]=0
+        }
+#        for(it in count){
+#            print "count: ",it,count[it]
+#        }
+    }
+    $fi_status!="" && $fi_status!="cs-host" {
+        if($fi_status in count){
+            count[$fi_status]+=1
+        }else if($fi_status in xcount){
+            xcount[$fi_status]+=1
+        }else{
+            xcount[$fi_status]=1
+        }
+        total+=1
+    }
+    END {
+        print "\n---- HTTP  status ----------------"
+        printf "%10s%10s\%10s\n","[status]","[count]","[rate%]"
+        for(i in idx){
+            if(idx[i]+0 in count){
+                printf "%10s%10s%9.2f\n",idx[i],count[idx[i]],count[idx[i]]/total*100
+            }
+        }
+        #awk array size...
+        xcount_size=0
+        for(i in xcount){
+            xcount_size+=1
+        }
+        if(xcount_size > 0){
+            print "\n---- abnormal  status ----------------"
+            printf "%10s%10s\%10s\n","[status]","[count]","[rate%]"
+            for(i in xcount){
+                printf "%10s%10s%9.2f\n",i,xcount[i],xcount[i]/total*100
+            }
+        }
+    }' \
+    $log_filepath
+
+
+
+
+
+
+
+
+
+
+
 # 清理临时文件
 #rm tmp_xxx.txt
 
