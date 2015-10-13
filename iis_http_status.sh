@@ -231,7 +231,7 @@ awk -F " " \
     }
     END {
         print "\n---- HTTP  status ----------------"
-        printf "%10s%10s\%10s\n","[status]","[count]","[rate%]"
+        printf "%10s%10s%10s\n","[status]","[count]","[rate%]"
         for(i in idx){
             if(idx[i]+0 in count){
                 printf "%10s%10s%9.2f\n",idx[i],count[idx[i]],count[idx[i]]/total*100
@@ -244,7 +244,7 @@ awk -F " " \
         }
         if(xcount_size > 0){
             print "\n---- abnormal  status ----------------"
-            printf "%10s%10s\%10s\n","[status]","[count]","[rate%]"
+            printf "%10s%10s%10s\n","[status]","[count]","[rate%]"
             for(i in xcount){
                 printf "%10s%10s%9.2f\n",i,xcount[i],xcount[i]/total*100
             }
