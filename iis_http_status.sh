@@ -276,6 +276,7 @@ awk -F " " \
     $log_filepath | sort -k2 -nr | awk -F " " \
     -v title="MOST frequent 404 request" \
     -v output_rate="$not_found_url_output_rate" \
+    -v output_at_least=5 -v output_at_most=20 \
     -f "src/awk/general_top_rate.awk"
 
 
@@ -298,7 +299,7 @@ awk -F " " \
     $log_filepath | sort -k2 -nr | awk -F " " \
     -v title="MOST frequent 500 request" \
     -v output_rate="$http_500_output_rate" \
-    -v output_at_least=3 \
+    -v output_at_least=5 -v output_at_most=20 \
     -f "src/awk/general_top_rate.awk"
 
 

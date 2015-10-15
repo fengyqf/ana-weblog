@@ -5,8 +5,14 @@
 #awk -F " " -v output_rate=80 -v title="most frequent foobar" -f general_top_rate.awk "file.csv"
 #
 # 脚本脚本时，需要传入的变量
-#   output_rate 输出百分比
-#   title 输出标题文字
+#   output_rate         输出百分比
+#   output_at_least     无条件的输出前output_at_least条，主要应对处理数据条数过少的情况，默认20条
+#   output_at_most     最多输出output_at_least条，防止输出过长，影响阅读，默认100
+#   title               输出标题文字
+#
+#
+# -- 举例 --
+# （在显式定义 output_at_least 为 0 的情况下）
 # 接受处理数据文件 file.csv 格式：
 # -----------------
 # total  20
@@ -33,6 +39,14 @@ BEGIN{
         #      定义变量output_end，标记彻底停止输出
         last_f2=0
         output_end=0
+        output_at_least+=0
+        if(output_at_least==0){
+            output_at_least=20
+        }
+        output_at_most+=0
+        if(output_at_most==0){
+            output_at_most=100
+        }
     }
     {
         if(NR==1){
@@ -40,8 +54,8 @@ BEGIN{
             #print "total: ",total
             #print "output_rate: ",output_rate
             #print "lc_sum_in_rate: ",lc_sum_in_rate
-            lc_sum_in_rate=total*output_rate/100
-            printf "---- %s (top %d%) ----------------\n", title, output_rate
+            printf "---- %s (top %d% && at least %d, at most %d) ----------------\n" \
+                , title, output_rate, output_at_least ,output_at_most
             printf "%10s   %4s    %s\n","[count]","[rate%]","[url]"
         }else{
             lc_sum+=$2
@@ -60,7 +74,8 @@ BEGIN{
                     output_end=1
                 }
             }
-            if(to_output==1){
+            if( (to_output==1 || count_output < output_at_least) && count_output < output_at_most){
+                count_output+=1
                 printf "%10s   %7.2f    %s\n",$2,$2/total*100,$1
             }
             last_f2=$2
