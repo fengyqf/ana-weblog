@@ -118,6 +118,7 @@ field_index_time_taken=19
 
 #输出高频404地址时，从高到低覆盖范围百分比
 not_found_url_output_rate=80
+http_500_output_rate=50
 
 
 #两种计算行数的方式，
@@ -257,9 +258,6 @@ awk -F " " \
 
 
 # most frequment 404 files
-#
-# 这个算法太复杂，但输出结果更合理
-# 适合“按一定比例输出高频数据”的场景
 awk -F " " \
     -v fi_status="$field_index_http_status" \
     -v fi_url="$field_index_url" \
@@ -276,49 +274,33 @@ awk -F " " \
         }
     }' \
     $log_filepath | sort -k2 -nr | awk -F " " \
+    -v title="MOST frequent 404 request" \
     -v output_rate="$not_found_url_output_rate" \
-    'BEGIN{
-        lc_sum=0
-        total=0
-        to_output=1
-        #在输出时，到达阈值的一行n，如果n+1行的第二字段（出现频次）相等，n+1条也应该输出
-        #  因此定义变量last_f2，暂存上一条数据第二个字段值。
-        #      定义变量output_end，标记彻底停止输出
-        last_f2=0
-        output_end=0
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "src/awk/general_top_rate.awk"
+
+
+# most frequment 500 files
+awk -F " " \
+    -v fi_status="$field_index_http_status" \
+    -v fi_url="$field_index_url" \
+    'BEGIN{}
+    $fi_status=="500"{
+        xcount[$fi_url]++
+        total+=1
     }
-    {
-        if(NR==1){
-            total=$2+0
-            #print "total: ",total
-            #print "output_rate: ",output_rate
-            #print "lc_sum_in_rate: ",lc_sum_in_rate
-            lc_sum_in_rate=total*output_rate/100
-            printf "---- most frequent 404 request (top %d%) ----------------\n",output_rate
-            printf "%10s   %4s    %s\n","[count]","[rate%]","[url]"
-        }else{
-            lc_sum+=$2
-            #小于阈值，输出
-            #  未彻底终结输出，检查与上条是否相同
-            #       相同，则输出
-            #       不同，标记彻底终结输出
-            if(lc_sum < lc_sum_in_rate){
-                to_output=1
-            }else if(output_end==0){
-                if($2==last_f2){
-                    #不小于阈值，检查上一条的f2是否与本条相同
-                    to_output=1
-                }else{
-                    to_output=0
-                    output_end=1
-                }
-            }
-            if(to_output==1){
-                printf "%10s   %7.2f    %s\n",$2,$2/total*100,$1
-            }
-            last_f2=$2
+    END{
+        #输出数据，管道到下一步的awk处理；首行为“total {总行数}”，数据行为“{url} {数目}”
+        print "total",total
+        for(it in xcount){
+            print it,xcount[it]
         }
-    }'
+    }' \
+    $log_filepath | sort -k2 -nr | awk -F " " \
+    -v title="MOST frequent 500 request" \
+    -v output_rate="$http_500_output_rate" \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "src/awk/general_top_rate.awk"
 
 
 
