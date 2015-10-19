@@ -257,6 +257,7 @@ awk -F " " \
 
 
 
+echo ""
 # most frequment 404 files
 awk -F " " \
     -v fi_status="$field_index_http_status" \
@@ -280,6 +281,7 @@ awk -F " " \
     -f "src/awk/general_top_rate.awk"
 
 
+echo ""
 # most frequment 500 files
 awk -F " " \
     -v fi_status="$field_index_http_status" \
