@@ -137,6 +137,33 @@ log_count=`awk 'END{print NR}' ${log_filepath}`
 echo "log file lines: "$log_count
 
 
+echo "[Notice] MOST frequent static requests, move them to CDN, for better performance"
+awk -F " " \
+    -v fi_file="${field_index_url}" \
+    -v total="$log_count" \
+    'BEGIN{
+        IGNORECASE=1
+    }
+    $fi_file ~ /\.(jpg|gif|png|js|css|pwf)$/ {
+        xcount[$fi_file]++
+    }
+    END{
+        print "total",total
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' \
+    $log_filepath |sort -k2 -rn |
+    awk -F " " \
+    -v title="MOST frequent static request" \
+    -v output_rate=80 \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
+
+
+echo -e "\n"
+
+
 #对日志做预处理，时间格式兼容
 
 awk -F" " \
@@ -150,7 +177,7 @@ awk -F" " \
         uxtime_t=sprintf("%d",uxtime / count_interval) * count_interval
         print uxtime_t
     }' \
-    $log_filepath |sort |uniq -c |sort -k2 | \
+    $log_filepath |sort |uniq -c |sort -nk2 | \
     awk -F " " \
     -i "${MYDIR}/lib/awk/fs_function.awk" \
     'BEGIN{
