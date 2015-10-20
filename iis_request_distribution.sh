@@ -9,11 +9,12 @@
 #   -s      separate 字段分隔符 av_FS
 #   -p      pattern, 字段模式 av_FPAT
 #   -f      field, 字段编号位置 av_FIELD_INDEX
+#   -i      interval, 分时间段计数时的时间间隔 count_interval
 #   -d      debug, 输出调试信息 dbg
 
 dbg=0
 #echo "init OPTIND:" $OPTIND
-while getopts "t:s:p:f:d" arg
+while getopts "t:s:p:f:i:d" arg
 do
     case $arg in
         t)
@@ -27,6 +28,9 @@ do
             ;;
         f)
             av_FIELD_INDEX=$OPTARG
+            ;;
+        i)
+            count_interval=$OPTARG
             ;;
         d)
             dbg=1
@@ -121,11 +125,12 @@ not_found_url_output_rate=80
 http_500_output_rate=50
 http_405_output_rate=50
 
-#计数时间段长度，秒
-count_interval=60
-
 config_timezone=8
 
+#计数时间段长度，秒
+if [ -z $count_interval ]; then
+    count_interval=60
+fi
 
 #两种计算行数的方式，
 #   第一种 wc -l 似乎更快一点
@@ -137,7 +142,9 @@ log_count=`awk 'END{print NR}' ${log_filepath}`
 echo "log file lines: "$log_count
 
 
+echo ""
 echo "[Notice] MOST frequent static requests, move them to CDN, for better performance"
+echo ""
 awk -F " " \
     -v fi_file="${field_index_url}" \
     -v total="$log_count" \
@@ -188,6 +195,10 @@ awk -F" " \
         printf "%20s%10s\n",fs_strftime($2),$1
     }'
 
+echo ""
+echo "[Notice] time interval: $count_interval seconds, "
+echo "         shell parameters -i, eg for 10 minutes:"
+echo "         \$./$(basename $0) -i 600"
 
 
 
