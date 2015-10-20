@@ -51,12 +51,13 @@ BEGIN{
     {
         if(NR==1){
             total=$2+0
-            #print "total: ",total
-            #print "output_rate: ",output_rate
-            #print "lc_sum_in_rate: ",lc_sum_in_rate
             printf "---- %s (top %d% && at least %d, at most %d) ----------------\n" \
                 , title, output_rate, output_at_least ,output_at_most
             printf "%10s   %4s    %s\n","[count]","[rate%]","[url]"
+            lc_sum_in_rate=total*output_rate/100
+            #print "total: ",total
+            #print "output_rate: ",output_rate
+            #print "lc_sum_in_rate: ",lc_sum_in_rate
         }else{
             lc_sum+=$2
             #小于阈值，输出

@@ -119,6 +119,7 @@ field_index_time_taken=19
 #输出高频404地址时，从高到低覆盖范围百分比
 not_found_url_output_rate=80
 http_500_output_rate=50
+http_405_output_rate=50
 
 
 #两种计算行数的方式，
@@ -257,6 +258,7 @@ awk -F " " \
 
 
 
+echo ""
 # most frequment 404 files
 awk -F " " \
     -v fi_status="$field_index_http_status" \
@@ -277,9 +279,10 @@ awk -F " " \
     -v title="MOST frequent 404 request" \
     -v output_rate="$not_found_url_output_rate" \
     -v output_at_least=5 -v output_at_most=20 \
-    -f "src/awk/general_top_rate.awk"
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 
 
+echo ""
 # most frequment 500 files
 awk -F " " \
     -v fi_status="$field_index_http_status" \
@@ -300,8 +303,31 @@ awk -F " " \
     -v title="MOST frequent 500 request" \
     -v output_rate="$http_500_output_rate" \
     -v output_at_least=5 -v output_at_most=20 \
-    -f "src/awk/general_top_rate.awk"
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 
+
+echo ""
+# most frequment 405 files
+awk -F " " \
+    -v fi_status="$field_index_http_status" \
+    -v fi_url="$field_index_url" \
+    'BEGIN{}
+    $fi_status=="405"{
+        xcount[$fi_url]++
+        total+=1
+    }
+    END{
+        #输出数据，管道到下一步的awk处理；首行为“total {总行数}”，数据行为“{url} {数目}”
+        print "total",total
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' \
+    $log_filepath | sort -k2 -nr | awk -F " " \
+    -v title="MOST frequent 405 request" \
+    -v output_rate="$http_405_output_rate" \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 
 
 
