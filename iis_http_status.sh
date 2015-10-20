@@ -5,10 +5,6 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
 
 
-#awk -v fi_method="$field_index_method" \
-#    'BEGIN{FS=" "}
-#    $fi_method!="" {print $fi_method}' \
-#    $log_filepath |sort |uniq -c |sort -nr |head -20
 
 awk -v fi_method="$field_index_method" \
     'BEGIN{

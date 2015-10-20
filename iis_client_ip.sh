@@ -5,12 +5,6 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
 
 
-# clientip grep
-
-#awk 'BEGIN{FS=" "} $10!="" && $1!="#Fields:" {print $10}' |sort |uniq -c|sort -nr
-
-
-#在awk脚本里$10,$11等使用别名，会慢一点，但维护性更好
 
 cat $log_filepath| awk -v fi_cip="$field_index_clientip" \
     'BEGIN{FS=" "} $fi_cip!="" && $1!="#Fields:" {print $fi_cip}' |sort |uniq -c|sort -nr |\
