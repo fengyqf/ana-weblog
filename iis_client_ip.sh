@@ -171,11 +171,19 @@ awk -v total="${log_count}" -v threshold="${suspect_client_ip_percent_threshold}
 # 检查异常ip的 useragent, 及最频繁的请求地址
 
 # awk 中筛选client ip地址的部分
+awk_filter=""
 ips=""
 
 while read line
     do
+        echo 'ip: '$line
         if [[ ! -z "${line}" ]]; then
+            if [[ -z "${awk_filter}" ]]; then
+                awk_filter="\$10==\""$line"\""
+            else
+                awk_filter=$awk_filter" || \$10==\""$line"\""
+            fi
+
             if [[ -z "${ips}" ]]; then
                 ips=" "$line
             else
@@ -184,6 +192,8 @@ while read line
         fi
     done < tmp_suspect_ips.txt
 
+echo "awk_filter: "$awk_filter
+echo "ips: "$ips
 
 #筛选出可疑ip请求的日志，输出到文件 tmp_suspect_request.log
 awk -v ips="${ips}" -v fi_cip="$field_index_clientip" \
@@ -200,6 +210,9 @@ awk -v ips="${ips}" -v fi_cip="$field_index_clientip" \
     BEGIN{
         FS=" "
         split(ips,ip_a," ")
+        for(i in ip_a){
+            print "ip: ",i," -> ",ip_a[i]
+        }
     }
 
      $fi_cip!="" && $1!="#Fields:" && in_array(ip_a,$fi_cip) == 1 {
