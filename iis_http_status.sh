@@ -5,10 +5,10 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
 
 
-
+echo ""
 awk -v fi_method="$field_index_method" \
     'BEGIN{
-        print "\n---- HTTP request method, and count ------------"
+        print "---- HTTP request method, and count ------------"
         FS=" "
         #按 HTTP/1.1 的method定义awk数组 http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
         #输出时按下面定义的顺序

@@ -5,7 +5,7 @@ MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
 
 
-
+echo ""
 cat $log_filepath| awk -v fi_cip="$field_index_clientip" \
     'BEGIN{FS=" "} $fi_cip!="" && $1!="#Fields:" {print $fi_cip}' |sort |uniq -c|sort -nr |\
 awk -v total="${log_count}" -v threshold="${suspect_client_ip_percent_threshold}" \
