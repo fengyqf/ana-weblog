@@ -1,33 +1,34 @@
 #!/usr/bin/env bash
 
 
-MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# 脚本说明
+# 对原始的web日志预处理，整理成统一的格式，用于使用同一套处理代码分析
+# 通过传递参数-t 指定日志类型，
+#        受getopts指令所限，暂只支持以单字符/数字编号的格式；考虑后续扩展 TODO
+# 默认不输出表头字段名
+#
 
-
-
-# client_ip.sh [OPTION]... [FILE]...
 
 # 参数列表
-#   -t      type, 日志文件类型，供选值 iis, apache
-#   -s      separate 字段分隔符 av_FS
-#   -p      pattern, 字段模式 av_FPAT
-#   -f      field, 字段编号位置 av_FIELD_INDEX
-#   -i      interval, 分时间段计数时的时间间隔 count_interval
+#   -t      type, 日志文件类型，指定数字编号，供选值参看下面case .... esac
 #   -d      debug, 输出调试信息 dbg
+#   -h      header, 输出表头字段名；默认不输出
+
+
+
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 dbg=0
 #echo "init OPTIND:" $OPTIND
-while getopts "t:s:p:f:i:d" arg
+while getopts "t:dh" arg
 do
     case $arg in
         t)
-            av_LOGTYPE=$OPTARG
+            logtype_id=$OPTARG
             ;;
-        s)
-            av_FS=$OPTARG
-            ;;
-        i)
-            count_interval=$OPTARG
+        h)
+            output_header="Y"
             ;;
         d)
             dbg=1
@@ -35,27 +36,30 @@ do
         ?)
     esac
 done
-
-LOGTYPE=$av_LOGTYPE
-
-if [ "${dbg}" == "1" ]; then
-    echo "---- debug ---------"
-    echo "av_LOGTYPE:        ["$av_LOGTYPE"]"
-    echo "av_FS:             ["$av_FS"]"
-    echo "av_FPAT:           ["$av_FPAT"]"
-    echo "av_FIELD_INDEX:    ["$av_FIELD_INDEX"]"
-    echo "---- debug done ---------"
-fi
-
-
-# 总记录条数
+shift $((OPTIND-1))
 log_filepath=$@
 
 
-echo "log file log_filepath: "$log_filepath
+#日志类型供选编号值
+case "$logtype_id" in
+    1)
+        logtype_name="iis"
+        ;;
+    2)
+        logtype_name="apache-combined"
+        ;;
+    3)
+        logtype_name="apache-combined"
+        ;;
+    ?)
+        logtype_name="unknown"
+        ;;
+esac
+
+
 
 if [[ ! -f $log_filepath ]]; then
-    echo "[Error] log file ["$log_filepath"] not found."
+    echo -e "\n[Error] log file ["$log_filepath"] not found."
     exit 501;
 fi
 
@@ -66,84 +70,44 @@ fi
 awk_test=`awk -V |head -1 |awk 'BEGIN{FS=",";IGNORECASE=1} $1 ~ /GNU awk 4\..*/ {print $1}'`
 if [[ -z awk_test ]]; then
     echo "[Error] require gawk 4.0+"
-    echo "You can comment the below line, but as you risk."
+    echo "You can comment the below line, but as your risk."
     exit 502
 fi
 
 
-
-#定义web日志文件中字段位置
-field_index_clientip=10
-field_index_useragent=11
-field_index_method=5
-# url, withOUT get-querystring
-field_index_url=6
-field_index_refer=12
-field_index_http_status=14
-field_index_response_bytes=17
-field_index_request_bytes=18
-field_index_time_taken=19
-
-#输出高频404地址时，从高到低覆盖范围百分比
-not_found_url_output_rate=80
-http_500_output_rate=50
-http_405_output_rate=50
-
-config_timezone=8
-
-#计数时间段长度，秒
-if [ -z $count_interval ]; then
-    count_interval=60
+if [ "${dbg}" == "1" ]; then
+    echo ""
+    echo "---- [$(basename $0)] debug---------"
+    echo "logtype_id:           ["$logtype_id"]"
+    echo "logtype_name:         ["$logtype_name"]"
+    echo "---- debug done ---------"
+    echo ""
 fi
 
-#两种计算行数的方式，
-#   第一种 wc -l 似乎更快一点
-#   第二种 awk 更准确，文件结尾无空行（非换行符结尾的文件）不会少算一行
-
-#log_count=`wc -l ${log_filepath}`
-log_count=`awk 'END{print NR}' ${log_filepath}`
-
-echo "log file lines: "$log_count
-
-
-
-
-# 单个ip请求数超过指定百分比，警告消息
-suspect_client_ip_percent_threshold=1
+if [ "${dbg}" == "1" -o "$output_header" == "Y" ]; then
+    #输出表头字段名
+    awk 'BEGIN{
+            printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" \
+                ,"clientip","method","url" \
+                ,"status","refer","useragent" \
+                ,"request_bytes","response_bytes","time_taken" \
+                ,"time"
+    }'
+fi
 
 
-av_LOGTYPE="apache-combined"
-
-echo "av_LOGTYPE ",$av_LOGTYPE
-
-if [ "$av_LOGTYPE" == "iis" ];then
-    #定义web日志文件中字段位置
-    field_index_clientip=10
-    field_index_method=5
-    field_index_url=6
-    field_index_http_status=14
-    field_index_refer=12
-    field_index_useragent=11
-    field_index_request_bytes=18
-    field_index_response_bytes=17
-    field_index_time_taken=19
-
+if [ "$logtype_name" == "iis" ]; then
     awk -F" " \
-    -v field_index_clientip="$field_index_clientip" \
-    -v field_index_method="$field_index_method" \
-    -v field_index_url="$field_index_url" \
-    -v field_index_http_status="$field_index_http_status" \
-    -v field_index_refer="$field_index_refer" \
-    -v field_index_useragent="$field_index_useragent" \
-    -v field_index_request_bytes="$field_index_request_bytes" \
-    -v field_index_response_bytes="$field_index_response_bytes" \
-    -v field_index_time_taken="$field_index_time_taken" \
     'BEGIN{
-        printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" \
-            ,"clientip","method","url" \
-            ,"status","refer","useragent" \
-            ,"response_bytes","request_bytes","time_taken" \
-            ,"time"
+        field_index_clientip=10
+        field_index_method=5
+        field_index_url=6
+        field_index_http_status=14
+        field_index_refer=12
+        field_index_useragent=11
+        field_index_request_bytes=18
+        field_index_response_bytes=17
+        field_index_time_taken=19
     }
     NR >5 || (NR < 5 && $1 !~ /^#.*/) {
             #日期/时间恒定位于1-2列
@@ -154,7 +118,7 @@ if [ "$av_LOGTYPE" == "iis" ];then
                 ,$1,$2
     }' $log_filepath
 
-elif [ "$av_LOGTYPE" == "apache-combined" ]; then
+elif [ "$logtype_name" == "apache-combined" ]; then
     awk 'BEGIN{
         FPAT="([^ ]+)|\"([^\"]+)\""
 
@@ -173,18 +137,12 @@ elif [ "$av_LOGTYPE" == "apache-combined" ]; then
         http_version=apache_r_piece[3]
 
 
-        if(1==1){
-
-            printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%s,\"%s\",\"%s\",\"%s\",\"%s %s\"\n" \
-                ,$field_index_clientip,method,url \
-                ,$field_index_http_status,fv_refer,$field_index_useragent \
-                ,vf_bytes,$field_index_response_bytes,vf_time_taken \
-                ,$4,$5
-        }else{
-            printf "%s,%s \n",$1,$2
-        }
+        printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%s,\"%s\",\"%s\",\"%s\",\"%s %s\"\n" \
+            ,$field_index_clientip,method,url \
+            ,$field_index_http_status,fv_refer,$field_index_useragent \
+            ,vf_bytes,$field_index_response_bytes,vf_time_taken \
+            ,$4,$5
     }
-
     ' $log_filepath
 
 fi
