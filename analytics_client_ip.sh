@@ -84,57 +84,142 @@ awk -F "," -v ips="${ips}" -v fi_cip="$field_index_clientip" \
 
 echo -e "\n"
 #过滤出可疑请求的最多请求的useragent
-echo "---- [suspect ip] most frequent user-agent, and times ------------"
 awk -v fi_ua="${field_index_useragent}" \
     'BEGIN{FS="\t";OFS="\t"}
-    {print $fi_ua}' \
-    tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
+    {
+        xcount[$fi_ua]++
+    }
+    END{
+        print "total",NR
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' \
+    tmp_suspect_request.log |sort -t $'\t' -k2 -nr |
+    awk \
+    -v title="[suspect ip] most frequent user-agent, and times" \
+    -v FS='\t' \
+    -v OFS='\t' \
+    -v output_rate=50 \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 echo -e "\n"
 
 #过滤出可疑请求的最多请求的 url 及请求次数
 echo "---- [suspect ip] most frequent url, and times ------------"
 awk -v fi_url="${field_index_url}" \
     'BEGIN{FS="\t";OFS="\t"}
-    {print $fi_url}' \
-    tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
+    {
+        split($fi_file,arr,"?")
+        xcount[arr[1]]++
+    }
+    END{
+        print "total",NR
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' \
+    tmp_suspect_request.log |sort -t $'\t' -k2 -nr |
+    awk \
+    -v title="[suspect ip] most frequent url, and times" \
+    -v FS='\t' \
+    -v OFS='\t' \
+    -v output_rate=80 \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 echo -e "\n"
 
 # 可疑ip请求的响应状态码
 echo "---- [suspect ip] HTTP response status ------------"
 awk -v fi_status="${field_index_http_status}" \
     'BEGIN{FS="\t";OFS="\t"}
-    {print $fi_status}' \
-    tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
+    {
+        xcount[$fi_status]++
+    }
+    END{
+        print "total",NR
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' \
+    tmp_suspect_request.log |sort -t $'\t' -k2 -nr |
+    awk \
+    -v title="[suspect ip] HTTP response status" \
+    -v FS='\t' \
+    -v OFS='\t' \
+    -v output_rate=100 \
+    -v output_at_least=10 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 echo -e "\n"
 
 # 可疑ip请求的最大请求字节数（按百字节计）
 echo "---- [suspect ip] request bytes (by 100 bytes) ------------"
 awk -v fi_r_bytes="${field_index_request_bytes}" \
     'BEGIN{FS="\t";OFS="\t"}
-    {printf "%d\n",$fi_r_bytes/100}' \
-    tmp_suspect_request.log |\
-  awk 'BEGIN{"\t";OFS="\t"}
-    {printf "%5d\n",$1*100}' |sort |uniq -c |sort -nr |head -20
+    {
+        lkey=int($fi_r_bytes/100)"00"
+        xcount[lkey]++
+    }
+    END{
+        print "total",NR
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' tmp_suspect_request.log |sort -t $'\t' -k2 -nr |
+    awk \
+    -v title="[suspect ip] request bytes (by 100 bytes)" \
+    -v FS='\t' \
+    -v OFS='\t' \
+    -v output_rate=80 \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 echo -e "\n"
 
 # 可疑ip请求的响应状态
 echo "---- [suspect ip] HTTP response bytes (by 1000 bytes) ------------"
 awk -v fi_r_bytes="${field_index_response_bytes}" \
     'BEGIN{FS="\t";OFS="\t"}
-    {printf "%d\n",$fi_r_bytes/1000}' \
-    tmp_suspect_request.log |\
-  awk 'BEGIN{"\t";OFS="\t"}
-    {printf "%10d\n",$1*1000}' |sort -t $'\t' |uniq -c |sort -nr |head -20
+    {
+        lkey=int($fi_r_bytes/1000)"000"
+        xcount[lkey]++
+    }
+    END{
+        print "total",NR
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' \
+    tmp_suspect_request.log |sort -t $'\t' -k2 -nr |
+    awk \
+    -v title="[suspect ip] HTTP response bytes (by 1000 bytes)" \
+    -v FS='\t' \
+    -v OFS='\t' \
+    -v output_rate=80 \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 echo -e "\n"
 
 # 可疑ip请求的处理花费时间
 echo "---- [suspect ip] time taken to process request (by 10 seconds) ------------"
 awk -v fi_time="${field_index_time_taken}" \
     'BEGIN{FS="\t";OFS="\t"}
-    {printf "%d\n",$fi_time/10}' \
-    tmp_suspect_request.log |\
-  awk 'BEGIN{FS=" ";OFS="\t"}
-    {printf "%8d\n",$1*10}' |sort -t $'\t' |uniq -c |sort -nr |head -20
+    {
+        lkey=int($fi_time/10)"0"
+        xcount[lkey]++
+    }
+    END{
+        print "total",NR
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' tmp_suspect_request.log | sort -t $'\t' -k2 -nr |
+    awk \
+    -v title="time taken to process request (by 10 seconds)" \
+    -v FS='\t' \
+    -v OFS='\t' \
+    -v output_rate=80 \
+    -v output_at_least=5 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 echo -e "\n"
 
 # 可疑ip请求的目标文件类型（按文件名后缀判断）
@@ -142,18 +227,30 @@ echo "---- [suspect ip] most popular file type ------------"
 awk -v fi_file="${field_index_url}" \
     'BEGIN{FS="\t";OFS="\t"}
     {
-        pos=match($fi_file,/\.[a-zA-Z0-9]*(\/|$)/)
-        print substr($fi_file,pos)
-    }' \
-    tmp_suspect_request.log |\
-    awk -F "/" '{print $1}' |\
-    sort |uniq -c |sort -nr |head -20
+        #这里根据url计算文件名后缀，算法应该有问题，待检查 TODO
+        split($fi_file,arr,"?")
+        pos=match(arr[1],/\.[a-zA-Z0-9]*(\/|$|\?)/)
+        if(pos==0){
+            cnt=split(arr[1],a2,"/")
+            lkey=a2[cnt]
+        }
+        lkey=substr(arr[1],pos)
+        xcount[lkey]++
+    }
+    END{
+        print "total",NR
+        for(it in xcount){
+            print it,xcount[it]
+        }
+    }' tmp_suspect_request.log | sort -t $'\t' -k2 -nr |
+    awk \
+    -v title="[suspect ip] most popular file type" \
+    -v FS='\t' \
+    -v OFS='\t' \
+    -v output_rate=80 \
+    -v output_at_least=50 -v output_at_most=20 \
+    -f "${MYDIR}/src/awk/general_top_rate.awk"
 echo -e "\n"
-# 处理缺陷
-#   对于形式如 /index.php/list/123/ 的请求，
-#     - 提到到的文件名后缀，只保留斜线（如果有）后面附加部分
-#     - 是否还有其它形式的缺陷，暂时未知
-#     - 如果能在 awk 内部提取到文件名，最好；但暂时没有方法
 
 if [ "${av_keep_tmp_file}" == "Y" ]; then
     echo "tmp files keept"
