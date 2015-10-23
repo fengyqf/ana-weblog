@@ -87,7 +87,7 @@ fi
 if [ "${dbg}" == "1" -o "$output_header" == "Y" ]; then
     #输出表头字段名
     awk 'BEGIN{
-            printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" \
+            printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
                 ,"clientip","method","url" \
                 ,"status","refer","useragent" \
                 ,"request_bytes","response_bytes","time_taken" \
@@ -111,7 +111,7 @@ if [ "$logtype_name" == "iis" ]; then
     }
     NR >5 || (NR < 5 && $1 !~ /^#.*/) {
             #日期/时间恒定位于1-2列
-            printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s %s\"\n" \
+            printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s %s\n" \
                 ,$field_index_clientip,$field_index_method,$field_index_url \
                 ,$field_index_http_status,$field_index_refer,$field_index_useragent \
                 ,$field_index_request_bytes,$field_index_response_bytes,$field_index_time_taken \
@@ -137,7 +137,7 @@ elif [ "$logtype_name" == "apache-combined" ]; then
         http_version=apache_r_piece[3]
 
 
-        printf "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%s,\"%s\",\"%s\",\"%s\",\"%s %s\"\n" \
+        printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s %s\n" \
             ,$field_index_clientip,method,url \
             ,$field_index_http_status,fv_refer,$field_index_useragent \
             ,vf_bytes,$field_index_response_bytes,vf_time_taken \

@@ -4,11 +4,13 @@
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
 
-"${MYDIR}/pretreatment.sh" -t 2 $log_filepath | tee tmp_log_formated.log | awk -F "," \
+"${MYDIR}/pretreatment.sh" -t 2 $log_filepath | tee tmp_log_formated.log | awk  \
     -v fi_cip="$field_index_clientip" \
     -v threshold="${suspect_client_ip_percent_threshold}" \
     'BEGIN{
         total=0
+        FS="\t"
+        OFS="\t"
     }
     {
         xcount[$fi_cip]++
@@ -66,6 +68,8 @@ echo "ips: "$ips
 awk -F "," -v ips="${ips}" -v fi_cip="$field_index_clientip" \
     -i "${MYDIR}/lib/awk/fs_function.awk" \
     'BEGIN{
+        FS="\t"
+        OFS="\t"
         split(ips,ip_a," ")
         #for(i in ip_a){
         #    print "ip: ",i," -> ",ip_a[i]
@@ -82,7 +86,7 @@ echo -e "\n"
 #过滤出可疑请求的最多请求的useragent
 echo "---- [suspect ip] most frequent user-agent, and times ------------"
 awk -v fi_ua="${field_index_useragent}" \
-    'BEGIN{FS=","}
+    'BEGIN{FS="\t";OFS="\t"}
     {print $fi_ua}' \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
@@ -90,7 +94,7 @@ echo -e "\n"
 #过滤出可疑请求的最多请求的 url 及请求次数
 echo "---- [suspect ip] most frequent url, and times ------------"
 awk -v fi_url="${field_index_url}" \
-    'BEGIN{FS=","}
+    'BEGIN{FS="\t";OFS="\t"}
     {print $fi_url}' \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
@@ -98,7 +102,7 @@ echo -e "\n"
 # 可疑ip请求的响应状态码
 echo "---- [suspect ip] HTTP response status ------------"
 awk -v fi_status="${field_index_http_status}" \
-    'BEGIN{FS=","}
+    'BEGIN{FS="\t";OFS="\t"}
     {print $fi_status}' \
     tmp_suspect_request.log |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
@@ -106,37 +110,37 @@ echo -e "\n"
 # 可疑ip请求的最大请求字节数（按百字节计）
 echo "---- [suspect ip] request bytes (by 100 bytes) ------------"
 awk -v fi_r_bytes="${field_index_request_bytes}" \
-    'BEGIN{FS=","}
+    'BEGIN{FS="\t";OFS="\t"}
     {printf "%d\n",$fi_r_bytes/100}' \
     tmp_suspect_request.log |\
-  awk 'BEGIN{FS=" "}
+  awk 'BEGIN{"\t";OFS="\t"}
     {printf "%5d\n",$1*100}' |sort |uniq -c |sort -nr |head -20
 echo -e "\n"
 
 # 可疑ip请求的响应状态
 echo "---- [suspect ip] HTTP response bytes (by 1000 bytes) ------------"
 awk -v fi_r_bytes="${field_index_response_bytes}" \
-    'BEGIN{FS=","}
+    'BEGIN{FS="\t";OFS="\t"}
     {printf "%d\n",$fi_r_bytes/1000}' \
     tmp_suspect_request.log |\
-  awk 'BEGIN{FS=" "}
-    {printf "%10d\n",$1*1000}' |sort |uniq -c |sort -nr |head -20
+  awk 'BEGIN{"\t";OFS="\t"}
+    {printf "%10d\n",$1*1000}' |sort -t $'\t' |uniq -c |sort -nr |head -20
 echo -e "\n"
 
 # 可疑ip请求的处理花费时间
 echo "---- [suspect ip] time taken to process request (by 10 seconds) ------------"
 awk -v fi_time="${field_index_time_taken}" \
-    'BEGIN{FS=","}
+    'BEGIN{FS="\t";OFS="\t"}
     {printf "%d\n",$fi_time/10}' \
     tmp_suspect_request.log |\
-  awk 'BEGIN{FS=","}
-    {printf "%8d\n",$1*10}' |sort |uniq -c |sort -nr |head -20
+  awk 'BEGIN{FS=" ";OFS="\t"}
+    {printf "%8d\n",$1*10}' |sort -t $'\t' |uniq -c |sort -nr |head -20
 echo -e "\n"
 
 # 可疑ip请求的目标文件类型（按文件名后缀判断）
 echo "---- [suspect ip] most popular file type ------------"
 awk -v fi_file="${field_index_url}" \
-    'BEGIN{FS=","}
+    'BEGIN{FS="\t";OFS="\t"}
     {
         pos=match($fi_file,/\.[a-zA-Z0-9]*(\/|$)/)
         print substr($fi_file,pos)
