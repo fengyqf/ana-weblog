@@ -67,9 +67,9 @@ awk -F "," -v ips="${ips}" -v fi_cip="$field_index_clientip" \
     -i "${MYDIR}/lib/awk/fs_function.awk" \
     'BEGIN{
         split(ips,ip_a," ")
-        for(i in ip_a){
-            print "ip: ",i," -> ",ip_a[i]
-        }
+        #for(i in ip_a){
+        #    print "ip: ",i," -> ",ip_a[i]
+        #}
     }
 
      $fi_cip!="" && $1!="#Fields:" && in_array(ip_a,$fi_cip) == 1 {
@@ -151,8 +151,12 @@ echo -e "\n"
 #     - 是否还有其它形式的缺陷，暂时未知
 #     - 如果能在 awk 内部提取到文件名，最好；但暂时没有方法
 
-
-# 清理临时文件
-rm tmp_suspect_ips.txt
-rm tmp_suspect_request.log
-rm tmp_log_formated.log
+if [ "${av_keep_tmp_file}" == "Y" ]; then
+    echo "tmp files keept"
+else
+    # 清理临时文件
+    echo "removing. tmp files"
+    rm tmp_suspect_ips.txt
+    rm tmp_suspect_request.log
+    rm tmp_log_formated.log
+fi

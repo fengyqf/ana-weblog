@@ -4,7 +4,7 @@
 # 参数列表
 # 这些参数列表，应该是没什么用的，有用的主要是计算分析出文件名；参数格式的，忽略 
 #   -t      type, 日志文件类型，供选值 iis, apache
-#   -s      separate 字段分隔符 av_FS
+#   -k      keep 保留临时文件
 #   -p      pattern, 字段模式 av_FPAT
 #   -f      field, 字段编号位置 av_FIELD_INDEX
 #   -i      interval, 分时间段计数时的时间间隔 count_interval
@@ -12,14 +12,14 @@
 
 dbg=0
 #echo "init OPTIND:" $OPTIND
-while getopts "t:s:p:f:i:d" arg
+while getopts "t:kp:f:i:d" arg
 do
     case $arg in
         t)
             av_LOGTYPE=$OPTARG
             ;;
-        s)
-            av_FS=$OPTARG
+        k)
+            av_keep_tmp_file="Y"
             ;;
         p)
             av_FPAT=$OPTARG
@@ -43,7 +43,7 @@ LOGTYPE=$av_LOGTYPE
 if [ "${dbg}" == "1" ]; then
     echo "---- debug ---------"
     echo "av_LOGTYPE:        ["$av_LOGTYPE"]"
-    echo "av_FS:             ["$av_FS"]"
+    echo "av_keep_tmp_file:  ["$av_keep_tmp_file"]"
     echo "av_FPAT:           ["$av_FPAT"]"
     echo "av_FIELD_INDEX:    ["$av_FIELD_INDEX"]"
     echo "---- debug done ---------"
