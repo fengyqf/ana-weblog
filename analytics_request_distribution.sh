@@ -56,22 +56,22 @@ awk -v FS='\t' -v OFS='\t' \
     awk \
     -i "${MYDIR}/lib/awk/fs_function.awk" \
     'BEGIN{
-        print "\n---- request count flow  ----------------"
+        printf "\n---- request count flow (interval:%s seconds, use `-i n` to change) ----------------",count_interval
         printf "%20s%10s\n","[time]","[count]"
     }
     {
         printf "%20s%10s\n",fs_strftime($2),$1
     }'
 
-echo ""
+echo '~~~~~~~~~~~~~~~~~~'
 echo "[Notice] time interval: $count_interval seconds, "
-echo "         shell parameters -i, eg for 10 minutes:"
-echo "         \$./$(basename $0) -i 600"
-
+echo "    shell parameters -i, eg for 10 minutes:"
+echo "    \$./$(basename $0) -i 600"
 
 
 
 # 清理临时文件
+echo ""
 if [ "${av_keep_tmp_file}" == "Y" ]; then
     echo "tmp files kept"
 else
