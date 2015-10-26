@@ -40,7 +40,7 @@ shift $((OPTIND-1))
 log_filepath=$@
 
 
-#日志类型供选编号值
+#日志类型供选编号值，或名称字符串
 case "$logtype_id" in
     1)
         logtype_name="iis"
@@ -51,8 +51,8 @@ case "$logtype_id" in
     3)
         logtype_name="apache-combined"
         ;;
-    ?)
-        logtype_name="unknown"
+    *)
+        logtype_name="$logtype_id"
         ;;
 esac
 
@@ -144,7 +144,8 @@ elif [ "$logtype_name" == "apache-combined" ]; then
             ,$4,$5
     }
     ' $log_filepath
-
+else
+    echo "known logtype_name: $logtype_name"
 fi
 
 

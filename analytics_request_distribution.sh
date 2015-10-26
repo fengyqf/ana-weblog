@@ -3,6 +3,7 @@
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
+echo "LOGTYPE: $LOGTYPE"
 
 "${MYDIR}/pretreatment.sh" -t $LOGTYPE $log_filepath > tmp_log_formated.log
 
