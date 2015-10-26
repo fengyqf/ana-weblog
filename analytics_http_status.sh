@@ -4,12 +4,14 @@
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
 
-
 echo ""
-awk -v fi_method="$field_index_method" \
+
+"${MYDIR}/pretreatment.sh" -t 2 $log_filepath | tee tmp_log_formated.log | awk \
+    -v fi_method="$field_index_method" \
     'BEGIN{
         print "---- HTTP request method, and count ------------"
-        FS=" "
+        FS="\t"
+        OFS="\t"
         #按 HTTP/1.1 的method定义awk数组 http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
         #输出时按下面定义的顺序
         method[1]="GET"
@@ -42,10 +44,10 @@ awk -v fi_method="$field_index_method" \
         total+=1
     }
     END{
-        printf "%10s%10s\n","[method]","[count]"
+        printf "%10s%10s%10s\n","[status]","[count]","[rate%]"
         for(i in method){
             if(method[i] in count){
-                printf "%10s%10s\n",method[i],count[method[i]]
+                printf "%10s%10s%9.2f\n",method[i],count[method[i]],count[method[i]]/total*100
             }
         }
         #awk array size...
@@ -55,16 +57,14 @@ awk -v fi_method="$field_index_method" \
         }
         if(xcount_size > 0){
             print "\n---- abnormal  method ----------------"
-            printf "%10s%10s\n","[method]","[count]"
+            printf "%10s%10s%10s\n","[status]","[count]","[rate%]"
             for(i in xcount){
-                printf "%10s%10s\n",i,xcount[i]
+                printf "%10s%10s%9.2f\n",method[i],count[method[i]],count[method[i]]/total*100
             }
         }
         #printf "%\n","HEAD","GET","HEAD","POST","PUT","DELETE","TRACE","CONNECT"
         #print count["HEAD"],count["GET"],count["HEAD"],count["POST"],count["PUT"],count["DELETE"],count["TRACE"],count["CONNECT"]
     }' \
-    $log_filepath
-    #|sort |uniq -c |sort -nr |head -20
 
 
 # [算法说明]
@@ -84,8 +84,9 @@ awk -v fi_method="$field_index_method" \
 awk -F " " \
    -v fi_status="$field_index_http_status" \
     'BEGIN{
-        #idx_cs="200,206,301,302,304,400,403,404,405,406,500,501"
-        idx_cs="200,206,301,302,304,400,403,404"
+        FS="\t"
+        OFS="\t"
+        idx_cs="200,206,301,302,304,400,403,404,405,406,500,501"
         num=split(idx_cs,idx,",")
         for(i=1;i<=num;i++){
             count[idx[i]]=0
@@ -122,7 +123,7 @@ awk -F " " \
             }
         }
     }' \
-    $log_filepath
+    tmp_log_formated.log
 
 
 
@@ -133,7 +134,10 @@ echo ""
 awk -F " " \
     -v fi_status="$field_index_http_status" \
     -v fi_url="$field_index_url" \
-    'BEGIN{}
+    'BEGIN{
+        FS="\t"
+        OFS="\t"
+    }
     $fi_status=="404"{
         xcount[$fi_url]++
         total+=1
@@ -145,7 +149,7 @@ awk -F " " \
             print it,xcount[it]
         }
     }' \
-    $log_filepath | sort -k2 -nr | awk -F " " \
+    tmp_log_formated.log | sort -k2 -nr | awk -F " " \
     -v title="MOST frequent 404 request" \
     -v output_rate="$not_found_url_output_rate" \
     -v output_at_least=5 -v output_at_most=20 \
@@ -169,7 +173,7 @@ awk -F " " \
             print it,xcount[it]
         }
     }' \
-    $log_filepath | sort -k2 -nr | awk -F " " \
+    tmp_log_formated.log | sort -k2 -nr | awk -F " " \
     -v title="MOST frequent 500 request" \
     -v output_rate="$http_500_output_rate" \
     -v output_at_least=5 -v output_at_most=20 \
@@ -193,7 +197,7 @@ awk -F " " \
             print it,xcount[it]
         }
     }' \
-    $log_filepath | sort -k2 -nr | awk -F " " \
+    tmp_log_formated.log | sort -k2 -nr | awk -F " " \
     -v title="MOST frequent 405 request" \
     -v output_rate="$http_405_output_rate" \
     -v output_at_least=5 -v output_at_most=20 \
@@ -201,10 +205,15 @@ awk -F " " \
 
 
 
-
-
 # 清理临时文件
-#rm tmp_xxx.txt
+if [ "${av_keep_tmp_file}" == "Y" ]; then
+    echo "tmp files kept"
+else
+    echo "removing. tmp files"
+    rm tmp_log_formated.log
+fi
+
+
 
 
 
