@@ -6,7 +6,7 @@ source "${MYDIR}/src/bash/init.sh"
 
 echo ""
 
-"${MYDIR}/pretreatment.sh" -t 2 $log_filepath | tee tmp_log_formated.log | awk \
+"${MYDIR}/pretreatment.sh" -t $LOGTYPE $log_filepath | tee tmp_log_formated.log | awk \
     -v fi_method="$field_index_method" \
     'BEGIN{
         print "---- HTTP request method, and count ------------"

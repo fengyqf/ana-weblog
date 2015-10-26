@@ -6,13 +6,13 @@
 #   -t      type, 日志文件类型，供选值 iis, apache
 #   -k      keep 保留临时文件
 #   -p      pattern, 字段模式 av_FPAT
-#   -f      field, 字段编号位置 av_FIELD_INDEX
+#   -m      time format, 日志中日期字段格式, 定义在 fs_function.awk 中 fs_str2time()
 #   -i      interval, 分时间段计数时的时间间隔 count_interval
 #   -d      debug, 输出调试信息 dbg
 
 dbg=0
 #echo "init OPTIND:" $OPTIND
-while getopts "t:kp:f:i:d" arg
+while getopts "t:kp:m:i:d" arg
 do
     case $arg in
         t)
@@ -24,8 +24,8 @@ do
         p)
             av_FPAT=$OPTARG
             ;;
-        f)
-            av_FIELD_INDEX=$OPTARG
+        m)
+            config_time_format=$OPTARG
             ;;
         i)
             count_interval=$OPTARG
@@ -102,6 +102,19 @@ http_500_output_rate=50
 http_405_output_rate=50
 
 config_timezone=8
+
+#根据日志类型定义日期类型
+if [[ "$config_time_format" == "" ]]; then
+    if [[ "$LOGTYPE" == "1" ]]; then
+        #iis ext, format: 2015-05-22 00:01:18
+        config_time_format=3
+    elif [[ "$LOGTYPE" == "2" ]]; then
+        #apache, format: [10/May/2015:03:45:00 +0800]
+        config_time_format=1
+    fi
+fi
+
+
 
 #计数时间段长度，秒
 if [ -z $count_interval ]; then
