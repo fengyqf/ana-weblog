@@ -11,7 +11,7 @@ echo "[Notice] MOST frequent static requests, move them to CDN, for better perfo
 echo ""
 
 log_count=`wc -l tmp_log_formated.log |awk '{print $1}'`
-awk  -v FS='\t' -v OFS='\t' \
+awk -v FS='\t' -v OFS='\t' \
     -v fi_file="${field_index_url}" \
     -v total="$log_count" \
     'BEGIN{
@@ -48,12 +48,12 @@ awk -v FS='\t' -v OFS='\t' \
         #print strftime("%Y-%m-%d %H:%M:%S")
     }
     {
-        uxtime=fs_str2time($10,3,+8)
+        uxtime=fs_str2time($10,config_time_format,+8)
         uxtime_t=sprintf("%d",uxtime / count_interval) * count_interval
         print uxtime_t
     }' \
-    tmp_log_formated.log |sort -t $'\t' |uniq -c |sort -nk2 | \
-    awk -v FS='\t' -v OFS='\t' \
+    tmp_log_formated.log |sort |uniq -c |sort -rnk2 | \
+    awk \
     -i "${MYDIR}/lib/awk/fs_function.awk" \
     'BEGIN{
         print "\n---- request count flow  ----------------"
