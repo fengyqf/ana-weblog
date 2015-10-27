@@ -3,7 +3,6 @@
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "${MYDIR}/src/bash/init.sh"
-echo "LOGTYPE: $LOGTYPE"
 
 "${MYDIR}/pretreatment.sh" -t $LOGTYPE $log_filepath > tmp_log_formated.log
 
@@ -57,7 +56,7 @@ awk -v FS='\t' -v OFS='\t' \
     awk \
     -i "${MYDIR}/lib/awk/fs_function.awk" \
     'BEGIN{
-        printf "\n---- request count flow (interval:%s seconds, use `-i n` to change) ----------------",count_interval
+        printf "\n---- request count flow (interval:%s seconds, use `-i n` to change) ----------------\n",count_interval
         printf "%20s%10s\n","[time]","[count]"
     }
     {

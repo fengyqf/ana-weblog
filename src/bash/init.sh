@@ -3,9 +3,8 @@
 # TODO 待清理 -----------
 # 参数列表
 # 这些参数列表，应该是没什么用的，有用的主要是计算分析出文件名；参数格式的，忽略 
-#   -t      type, 日志文件类型，供选值 iis, apache
+#   -t      type, 日志文件类型，供选值 iis, apache等，具体参看 pretreatment.sh 中的定义
 #   -k      keep 保留临时文件
-#   -p      pattern, 字段模式 av_FPAT
 #   -m      time format, 日志中日期字段格式, 定义在 fs_function.awk 中 fs_str2time()
 #   -i      interval, 分时间段计数时的时间间隔 count_interval
 #   -d      debug, 输出调试信息 dbg
@@ -16,7 +15,7 @@ while getopts "t:kp:m:i:d" arg
 do
     case $arg in
         t)
-            av_LOGTYPE=$OPTARG
+            LOGTYPE=$OPTARG
             ;;
         k)
             av_keep_tmp_file="Y"
@@ -38,11 +37,9 @@ do
 done
 shift $((OPTIND-1))
 
-LOGTYPE=$av_LOGTYPE
 
 if [ "${dbg}" == "1" ]; then
     echo "---- debug ---------"
-    echo "av_LOGTYPE:        ["$av_LOGTYPE"]"
     echo "av_keep_tmp_file:  ["$av_keep_tmp_file"]"
     echo "av_FPAT:           ["$av_FPAT"]"
     echo "av_FIELD_INDEX:    ["$av_FIELD_INDEX"]"
@@ -104,16 +101,16 @@ http_405_output_rate=50
 config_timezone=8
 
 #根据日志类型定义日期类型
-if [[ "$config_time_format" == "" ]]; then
-    if [[ "$LOGTYPE" == "1" ]]; then
+if [[ -z "$config_time_format" ]]; then
+    echo "config_time_format empty, use LOGTYPE to parse"
+    if [[ "$LOGTYPE" =~ ^iis-?.*$ ]]; then
         #iis ext, format: 2015-05-22 00:01:18
         config_time_format=3
-    elif [[ "$LOGTYPE" == "2" ]]; then
+    elif [[ "$LOGTYPE" =~ ^apache-?.*$ ]]; then
         #apache, format: [10/May/2015:03:45:00 +0800]
         config_time_format=1
     fi
 fi
-
 
 
 #计数时间段长度，秒

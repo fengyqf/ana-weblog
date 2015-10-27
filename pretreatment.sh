@@ -4,8 +4,12 @@
 # 脚本说明
 # 对原始的web日志预处理，整理成统一的格式，用于使用同一套处理代码分析
 # 通过传递参数-t 指定日志类型，
-#        受getopts指令所限，暂只支持以单字符/数字编号的格式；考虑后续扩展 TODO
-# 默认不输出表头字段名
+#   供选值：iis,iis-extend,apache,apache-combined
+#           apache-combinedio,apache-common
+#       (暂未全部实现) TODO
+#   如果有其它格式的日志，参考已实现格式自行实现
+# 输出格式
+#   默认不输出表头字段名
 #
 
 
@@ -25,7 +29,7 @@ while getopts "t:dh" arg
 do
     case $arg in
         t)
-            logtype_id=$OPTARG
+            logtype_name=$OPTARG
             ;;
         h)
             output_header="Y"
@@ -38,24 +42,6 @@ do
 done
 shift $((OPTIND-1))
 log_filepath=$@
-
-
-#日志类型供选编号值，或名称字符串
-case "$logtype_id" in
-    1)
-        logtype_name="iis"
-        ;;
-    2)
-        logtype_name="apache-combined"
-        ;;
-    3)
-        logtype_name="apache-combined"
-        ;;
-    *)
-        logtype_name="$logtype_id"
-        ;;
-esac
-
 
 
 if [[ ! -f $log_filepath ]]; then
@@ -78,8 +64,7 @@ fi
 if [ "${dbg}" == "1" ]; then
     echo ""
     echo "---- [$(basename $0)] debug---------"
-    echo "logtype_id:           ["$logtype_id"]"
-    echo "logtype_name:         ["$logtype_name"]"
+   echo "logtype_name:         ["$logtype_name"]"
     echo "---- debug done ---------"
     echo ""
 fi
@@ -96,7 +81,7 @@ if [ "${dbg}" == "1" -o "$output_header" == "Y" ]; then
 fi
 
 
-if [ "$logtype_name" == "iis" ]; then
+if [[ "$logtype_name" == "iis" || "$logtype_name" == "iis-extend" ]]; then
     awk -F" " \
     'BEGIN{
         field_index_clientip=10
@@ -118,7 +103,7 @@ if [ "$logtype_name" == "iis" ]; then
                 ,$1,$2
     }' $log_filepath
 
-elif [ "$logtype_name" == "apache-combined" ]; then
+elif [[ "$logtype_name" == "apache" || "$logtype_name" == "apache-combined" ]]; then
     awk 'BEGIN{
         FPAT="([^ ]+)|\"([^\"]+)\""
 
