@@ -53,7 +53,7 @@ BEGIN{
             total=$2+0
             printf "---- %s (top %d% && at least %d, at most %d) ----------------\n" \
                 , title, output_rate, output_at_least ,output_at_most
-            printf "%10s   %4s    %s\n","[count]","[rate%]","[url]"
+            printf "%10s   %4s    %s\n","[count]","[rate%]","[subject]"
             lc_sum_in_rate=total*output_rate/100
             #print "total: ",total
             #print "output_rate: ",output_rate
