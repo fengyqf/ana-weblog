@@ -80,3 +80,12 @@ function fs_strftime(uxtime,timezone)
     return strftime("%Y-%m-%d %H:%M:%S",uxtime+3600*timezone);
 }
 
+
+function in_array(arr,val){
+    for(i in arr){
+        if(arr[i]==val){
+            return 1;
+        }
+    }
+    return 0;
+}
