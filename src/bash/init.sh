@@ -102,13 +102,15 @@ config_timezone=8
 
 #根据日志类型定义日期类型
 if [[ -z "$config_time_format" ]]; then
-    echo "config_time_format empty, use LOGTYPE to parse"
     if [[ "$LOGTYPE" =~ ^iis-?.*$ ]]; then
         #iis ext, format: 2015-05-22 00:01:18
         config_time_format=3
     elif [[ "$LOGTYPE" =~ ^apache-?.*$ ]]; then
         #apache, format: [10/May/2015:03:45:00 +0800]
         config_time_format=1
+    fi
+    if [ -z $dbg ]; then
+        echo "config_time_format empty, use LOGTYPE to parse; $config_time_format"
     fi
 fi
 

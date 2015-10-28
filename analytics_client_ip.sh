@@ -52,7 +52,6 @@ ips=""
 
 while read line
     do
-        echo 'ip: '$line
         if [[ ! -z "${line}" ]]; then
             if [[ -z "${ips}" ]]; then
                 ips=" "$line
@@ -62,7 +61,6 @@ while read line
         fi
     done < tmp_suspect_ips.txt
 
-echo "ips: "$ips
 
 #筛选出可疑ip请求的日志，输出到文件 tmp_suspect_request.log
 awk -F "," -v ips="${ips}" -v fi_cip="$field_index_clientip" \
@@ -106,11 +104,10 @@ awk -v fi_ua="${field_index_useragent}" \
 echo -e "\n"
 
 #过滤出可疑请求的最多请求的 url 及请求次数
-echo "---- [suspect ip] most frequent url, and times ------------"
 awk -v fi_url="${field_index_url}" \
     'BEGIN{FS="\t";OFS="\t"}
     {
-        split($fi_file,arr,"?")
+        split($fi_url,arr,"?")
         xcount[arr[1]]++
     }
     END{
@@ -130,7 +127,6 @@ awk -v fi_url="${field_index_url}" \
 echo -e "\n"
 
 # 可疑ip请求的响应状态码
-echo "---- [suspect ip] HTTP response status ------------"
 awk -v fi_status="${field_index_http_status}" \
     'BEGIN{FS="\t";OFS="\t"}
     {
@@ -153,7 +149,6 @@ awk -v fi_status="${field_index_http_status}" \
 echo -e "\n"
 
 # 可疑ip请求的最大请求字节数（按百字节计）
-echo "---- [suspect ip] request bytes (by 100 bytes) ------------"
 awk -v fi_r_bytes="${field_index_request_bytes}" \
     'BEGIN{FS="\t";OFS="\t"}
     {
@@ -176,7 +171,6 @@ awk -v fi_r_bytes="${field_index_request_bytes}" \
 echo -e "\n"
 
 # 可疑ip请求的响应状态
-echo "---- [suspect ip] HTTP response bytes (by 1000 bytes) ------------"
 awk -v fi_r_bytes="${field_index_response_bytes}" \
     'BEGIN{FS="\t";OFS="\t"}
     {
@@ -200,7 +194,6 @@ awk -v fi_r_bytes="${field_index_response_bytes}" \
 echo -e "\n"
 
 # 可疑ip请求的处理花费时间
-echo "---- [suspect ip] time taken to process request (by 10 seconds) ------------"
 awk -v fi_time="${field_index_time_taken}" \
     'BEGIN{FS="\t";OFS="\t"}
     {
@@ -223,7 +216,6 @@ awk -v fi_time="${field_index_time_taken}" \
 echo -e "\n"
 
 # 可疑ip请求的目标文件类型（按文件名后缀判断）
-echo "---- [suspect ip] most popular file type ------------"
 awk -v fi_file="${field_index_url}" \
     'BEGIN{FS="\t";OFS="\t"}
     {
